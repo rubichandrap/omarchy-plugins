@@ -35,6 +35,8 @@ below windows). Fed by `cava`'s raw ascii output.
 | `cellMs` | 0 | per-cell opacity/size transition; 0 = instant 0-1 jump. |
 | `marginTop` / `marginBottom` | 0 / 0 | strip offset from the top/bottom edge; negative pushes it off-screen (tiles cut). |
 | `marginLeft` / `marginRight` | -20 / -20 | strip offset from the left/right edge; negative pushes it off-screen (tiles cut). |
+| `sideShade` | 0.35 | darkening at the left/right screen edges; 0 = off. |
+| `sideShadeWidth` | 280 | how far the edge shade reaches from each side. |
 
 ## Apply changes
 

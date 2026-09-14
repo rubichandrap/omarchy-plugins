@@ -24,10 +24,10 @@ Item {
   property real tileAlpha: 0.52   // global opacity multiplier
   property real rowFade: 0.55     // how much dimmer the inner row gets
   property real vignette: 0.30    // soft shadow behind the strips for contrast
-  property bool bottomStrip: false // bottom edge strip
-  property bool topStrip: false    // top edge strip
-  property bool leftStrip: true    // left edge strip
-  property bool rightStrip: true   // right edge strip
+  property bool bottomStrip: true // bottom edge strip
+  property bool topStrip: true    // top edge strip
+  property bool leftStrip: true   // left edge strip
+  property bool rightStrip: true  // right edge strip
   property int idleFadeout: 1000  // ms after last audible frame until fade-out
   property int fadeMs: 0          // strip show/hide fade duration; 0 = instant
   property int cellMs: 0          // per-cell opacity/size transition; 0 = instant jump
@@ -35,6 +35,8 @@ Item {
   property real marginBottom: 0   // off-screen, so the outer tiles get cut at the edge
   property real marginLeft: -20
   property real marginRight: -20
+  property real sideShade: 0.35   // darkening at the left/right screen edges (0 = off)
+  property real sideShadeWidth: 280 // how far that shade reaches from each edge
   // ----------------------------------------------------------
 
   property var cellValues: []
@@ -283,6 +285,28 @@ Item {
             orientation: Gradient.Horizontal
             GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0) }
             GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, root.vignette) }
+          }
+        }
+
+        // Screen-edge shade: a dark gradient hugging the left/right edges for a
+        // dramatic frame. Darkness and reach are knobs; it fades with the
+        // music like the rest of the overlay.
+        Rectangle {
+          anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+          width: root.sideShadeWidth
+          gradient: Gradient {
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, root.sideShade) }
+            GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0) }
+          }
+        }
+        Rectangle {
+          anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
+          width: root.sideShadeWidth
+          gradient: Gradient {
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0) }
+            GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, root.sideShade) }
           }
         }
 
