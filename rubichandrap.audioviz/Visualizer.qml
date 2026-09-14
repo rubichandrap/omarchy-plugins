@@ -19,7 +19,8 @@ Item {
   property int rows: 3            // cell rows per strip, edge-outward
   property real tileFill: 0.62    // lit cell size as a fraction of its slot
   property real gain: 0.85        // band sensitivity multiplier
-  property real decay: 0.94       // per-frame brightness decay
+  property real decay: 0.94       // per-frame brightness decay (used only when binary: false)
+  property bool binary: true      // cells snap on/off 0-1 without decay
   property real tileAlpha: 0.52   // global opacity multiplier
   property real rowFade: 0.55     // how much dimmer the inner row gets
   property real vignette: 0.30    // soft shadow behind the strips for contrast
@@ -29,6 +30,7 @@ Item {
   property bool rightStrip: true   // right edge strip
   property int idleFadeout: 1000  // ms after last audible frame until fade-out
   property int fadeMs: 0          // strip show/hide fade duration; 0 = instant
+  property int cellMs: 0          // per-cell opacity/size transition; 0 = instant jump
   // ----------------------------------------------------------
 
   property var cellValues: []
@@ -112,18 +114,25 @@ Item {
 
   Component.onCompleted: buildGrid()
 
-  // One ignite/decay step over a grid; returns the new value array.
+  // One ignite step over a grid; returns the new value array. With binary on,
+  // a cell is simply lit (1) while its band beats its threshold, else off (0).
+  // With binary off it keeps cliamp's gradual decay instead.
   function stepGrid(prev, bands, gridBand, gridThreshold) {
     var next = []
     for (var i = 0; i < gridBand.length; i++) {
-      var val = i < prev.length ? prev[i] * decay : 0
       var b = bands[gridBand[i]]
       var lvl = (b === undefined ? 0 : b) * gain
-      if (lvl > gridThreshold[i]) {
-        var ignited = lvl > 1.05 ? 1.05 : lvl
-        if (ignited > val) val = ignited
+      var val
+      if (binary) {
+        val = lvl > gridThreshold[i] ? 1 : 0
+      } else {
+        val = i < prev.length ? prev[i] * decay : 0
+        if (lvl > gridThreshold[i]) {
+          var ignited = lvl > 1.05 ? 1.05 : lvl
+          if (ignited > val) val = ignited
+        }
+        if (val < 0.001) val = 0
       }
-      if (val < 0.001) val = 0
       next.push(val)
     }
     return next
@@ -292,9 +301,9 @@ Item {
                   y: column.height - height - index * root.cellPitch()
                   color: root.tierColor(v)
                   opacity: root.cellOpacity(v, index)
-                  Behavior on opacity { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-                  Behavior on width { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-                  Behavior on height { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
+                  Behavior on opacity { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
+                  Behavior on width { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
+                  Behavior on height { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                 }
               }
             }
@@ -327,9 +336,9 @@ Item {
                   y: index * root.cellPitch()
                   color: root.tierColor(v)
                   opacity: root.cellOpacity(v, index)
-                  Behavior on opacity { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-                  Behavior on width { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-                  Behavior on height { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
+                  Behavior on opacity { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
+                  Behavior on width { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
+                  Behavior on height { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                 }
               }
             }
@@ -357,9 +366,9 @@ Item {
                 y: content.height - height - leftCell.index * root.cellPitch()
                 color: root.tierColor(v)
                 opacity: root.cellOpacity(v, index)
-                Behavior on opacity { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-                Behavior on width { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-                Behavior on height { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
+                Behavior on opacity { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
+                Behavior on width { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
+                Behavior on height { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
               }
             }
           }
@@ -386,9 +395,9 @@ Item {
                 y: content.height - height - rightCell.index * root.cellPitch()
                 color: root.tierColor(v)
                 opacity: root.cellOpacity(v, index)
-                Behavior on opacity { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-                Behavior on width { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
-                Behavior on height { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
+                Behavior on opacity { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
+                Behavior on width { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
+                Behavior on height { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
               }
             }
           }

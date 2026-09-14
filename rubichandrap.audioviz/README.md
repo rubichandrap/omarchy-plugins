@@ -21,7 +21,8 @@ below windows). Fed by `cava`'s raw ascii output.
 | `rows` | 3 | cell rows per strip, edge-outward. Total strip depth grows with it. |
 | `tileFill` | 0.62 | lit dot size as a fraction of its slot; smaller = sparser. |
 | `gain` | 0.85 | band sensitivity; higher = more cells ignite. |
-| `decay` | 0.94 | per-frame fade; lower = cells switch off faster. |
+| `decay` | 0.94 | per-frame fade when `binary: false`; lower = cells switch off faster. |
+| `binary` | true | cells snap on/off 0-1; false = cliamp-style gradual decay. |
 | `tileAlpha` | 0.52 | global opacity. |
 | `rowFade` | 0.55 | how much dimmer the inner row is than the edge row. |
 | `vignette` | 0.30 | soft shadow behind the strips for contrast on bright wallpapers. |
@@ -29,8 +30,9 @@ below windows). Fed by `cava`'s raw ascii output.
 | `topStrip` | false | top edge strip. |
 | `leftStrip` | true | left edge strip. |
 | `rightStrip` | true | right edge strip. |
-| `idleFadeout` | 2000 | ms of silence before the strip fades out. |
+| `idleFadeout` | 1000 | ms of silence before the strip fades out. |
 | `fadeMs` | 0 | show/hide fade duration; 0 = appear and vanish instantly. |
+| `cellMs` | 0 | per-cell opacity/size transition; 0 = instant 0-1 jump. |
 
 ## Apply changes
 
