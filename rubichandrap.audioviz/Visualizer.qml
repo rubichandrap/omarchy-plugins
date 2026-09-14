@@ -155,6 +155,9 @@ Item {
     return 0.50
   }
   function tierColor(v) {
+    // Binary cells are always fully lit, so they keep the plain theme accent
+    // — no tier lightening, no white drift.
+    if (binary) return Color.accent
     // Hue stays inside the theme accent family: hot tiers are the accent
     // lightened in place, never shifted to another hue (no gray, no white).
     // Same trick bjarneo's music-wallpaper uses: min(1, accent * 1.3 + 0.15).
