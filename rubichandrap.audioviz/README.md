@@ -30,6 +30,7 @@ below windows). Fed by `cava`'s raw ascii output.
 | `leftStrip` | true | left edge strip. |
 | `rightStrip` | true | right edge strip. |
 | `idleFadeout` | 2000 | ms of silence before the strip fades out. |
+| `fadeMs` | 0 | show/hide fade duration; 0 = appear and vanish instantly. |
 
 ## Apply changes
 

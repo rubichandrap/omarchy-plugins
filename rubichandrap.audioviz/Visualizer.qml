@@ -27,7 +27,8 @@ Item {
   property bool topStrip: false    // top edge strip
   property bool leftStrip: true    // left edge strip
   property bool rightStrip: true   // right edge strip
-  property int idleFadeout: 2000  // ms after last audible frame until fade-out
+  property int idleFadeout: 1000  // ms after last audible frame until fade-out
+  property int fadeMs: 0          // strip show/hide fade duration; 0 = instant
   // ----------------------------------------------------------
 
   property var cellValues: []
@@ -216,7 +217,10 @@ Item {
         id: content
         anchors.fill: parent
         opacity: root.active ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+        Behavior on opacity {
+          enabled: root.fadeMs > 0
+          NumberAnimation { duration: root.fadeMs; easing.type: Easing.OutCubic }
+        }
 
         // Soft shadows along the three edges: the cells keep contrast against
         // bright wallpapers without raising their own opacity (bjarneo/quickshell
