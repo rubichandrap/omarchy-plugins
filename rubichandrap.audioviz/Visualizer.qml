@@ -16,7 +16,7 @@ Item {
 
   // ---- knobs: edit freely, then `omarchy restart shell` ----
   property int columns: 44        // spectrum bands (match cava's `bars`)
-  property int rows: 3            // cell rows per strip, edge-outward
+  property real rows: 3           // cell rows per strip (2.5 = two full rows + a half row)
   property real tileFill: 0.62    // lit cell size as a fraction of its slot
   property real gain: 0.85        // band sensitivity multiplier
   property real decay: 0.94       // per-frame brightness decay (used only when binary: false)
@@ -31,6 +31,10 @@ Item {
   property int idleFadeout: 1000  // ms after last audible frame until fade-out
   property int fadeMs: 0          // strip show/hide fade duration; 0 = instant
   property int cellMs: 0          // per-cell opacity/size transition; 0 = instant jump
+  property real marginTop: 0      // per-edge strip offset; negative pushes the strip
+  property real marginBottom: 0   // off-screen, so the outer tiles get cut at the edge
+  property real marginLeft: -20
+  property real marginRight: -20
   // ----------------------------------------------------------
 
   property var cellValues: []
@@ -56,7 +60,7 @@ Item {
     return cellPitch() * tileFill
   }
   function stripExtent() {
-    return tileSize() + (rows - 1) * cellPitch()
+    return tileSize() + (Math.ceil(rows) - 1) * cellPitch()
   }
 
   // Stable per-cell pseudo-random value in [0,1).
@@ -83,7 +87,7 @@ Item {
 
     var b1 = []
     var t1 = []
-    for (var r = 0; r < rows; r++) {
+    for (var r = 0; r < Math.ceil(rows); r++) {
       var base = rows > 1 ? Math.round(r * (columns - 1) / (rows - 1)) : 0
       for (var c = 0; c < columns; c++) {
         b1.push(clampBand(base + Math.floor(hash(c * 7.3 + 0.5, r * 3.7 + 1.1) * 5) - 2))
@@ -93,14 +97,14 @@ Item {
     cellBand = b1
     cellThreshold = t1
     var v1 = []
-    for (var i = 0; i < rows * columns; i++) v1.push(0)
+    for (var i = 0; i < Math.ceil(rows) * columns; i++) v1.push(0)
     cellValues = v1
 
     var b2 = []
     var t2 = []
     for (var cc = 0; cc < n; cc++) {
       var base2 = n > 1 ? Math.round(cc * (columns - 1) / (n - 1)) : 0
-      for (var rr = 0; rr < rows; rr++) {
+      for (var rr = 0; rr < Math.ceil(rows); rr++) {
         b2.push(clampBand(base2 + Math.floor(hash(cc * 5.9 + 100.5, rr * 4.3 + 77.1) * 5) - 2))
         t2.push(0.04 + hash(cc * 2.3 + 100.31, rr * 3.1 + 77.77) * 0.74)
       }
@@ -108,7 +112,7 @@ Item {
     sideBand = b2
     sideThreshold = t2
     var v2 = []
-    for (var j = 0; j < n * rows; j++) v2.push(0)
+    for (var j = 0; j < n * Math.ceil(rows); j++) v2.push(0)
     sideValues = v2
   }
 
@@ -154,6 +158,12 @@ Item {
     if (v >= 0.15) return 0.68
     return 0.50
   }
+  // Fractional `rows`: the innermost row shrinks to the fractional part
+  // (rows 2.5 = two full rows + a half-size third row).
+  function rowScale(index) {
+    var frac = rows - Math.floor(rows)
+    return (frac > 0 && index >= Math.floor(rows)) ? frac : 1
+  }
   function tierColor(v) {
     // Binary cells are always fully lit, so they keep the plain theme accent
     // — no tier lightening, no white drift.
@@ -174,7 +184,7 @@ Item {
     return Color.accent
   }
   function cellOpacity(v, row) {
-    return tileAlpha * tierAlpha(v) * (1 - rowFade * row / Math.max(1, rows - 1))
+    return tileAlpha * tierAlpha(v) * (1 - rowFade * row / Math.max(1, Math.ceil(rows) - 1))
   }
 
   Process {
@@ -239,7 +249,7 @@ Item {
         // vignette trick).
         Rectangle {
           visible: root.bottomStrip
-          anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+          anchors { left: parent.left; right: parent.right; bottom: parent.bottom; bottomMargin: root.marginBottom }
           height: root.stripExtent() + root.cellPitch() * 0.5
           gradient: Gradient {
             GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0) }
@@ -248,7 +258,7 @@ Item {
         }
         Rectangle {
           visible: root.topStrip
-          anchors { left: parent.left; right: parent.right; top: parent.top }
+          anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: root.marginTop }
           height: root.stripExtent() + root.cellPitch() * 0.5
           gradient: Gradient {
             GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, root.vignette) }
@@ -257,7 +267,7 @@ Item {
         }
         Rectangle {
           visible: root.leftStrip
-          anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+          anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: root.marginLeft }
           width: root.stripExtent() + root.cellPitch() * 0.5
           gradient: Gradient {
             orientation: Gradient.Horizontal
@@ -267,7 +277,7 @@ Item {
         }
         Rectangle {
           visible: root.rightStrip
-          anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
+          anchors { right: parent.right; top: parent.top; bottom: parent.bottom; rightMargin: root.marginRight }
           width: root.stripExtent() + root.cellPitch() * 0.5
           gradient: Gradient {
             orientation: Gradient.Horizontal
@@ -280,7 +290,7 @@ Item {
         Row {
           id: row
           visible: root.bottomStrip
-          anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+          anchors { left: parent.left; right: parent.right; bottom: parent.bottom; bottomMargin: root.marginBottom }
           Repeater {
             model: root.columns
 
@@ -299,7 +309,7 @@ Item {
                   readonly property real v: index * root.columns + column.index < root.cellValues.length
                     ? root.cellValues[index * root.columns + column.index] : 0
                   width: root.tileSize() * root.tierSize(v)
-                  height: width
+                  height: width * root.rowScale(index)
                   x: (column.width - width) / 2
                   y: column.height - height - index * root.cellPitch()
                   color: root.tierColor(v)
@@ -316,7 +326,7 @@ Item {
         // ---- top strip ----
         Row {
           visible: root.topStrip
-          anchors { left: parent.left; right: parent.right; top: parent.top }
+          anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: root.marginTop }
           Repeater {
             model: root.columns
 
@@ -334,7 +344,7 @@ Item {
                   readonly property real v: index * root.columns + topColumn.index < root.cellValues.length
                     ? root.cellValues[index * root.columns + topColumn.index] : 0
                   width: root.tileSize() * root.tierSize(v)
-                  height: width
+                  height: width * root.rowScale(index)
                   x: (topColumn.width - width) / 2
                   y: index * root.cellPitch()
                   color: root.tierColor(v)
@@ -361,11 +371,12 @@ Item {
 
               Rectangle {
                 required property int index
-                readonly property real v: leftCell.index * root.rows + index < root.sideValues.length
-                  ? root.sideValues[leftCell.index * root.rows + index] : 0
-                width: root.tileSize() * root.tierSize(v)
-                height: width
-                x: (root.cellPitch() - width) / 2 + index * root.cellPitch()
+                readonly property real v: leftCell.index * Math.ceil(root.rows) + index < root.sideValues.length
+                  ? root.sideValues[leftCell.index * Math.ceil(root.rows) + index] : 0
+                readonly property real s: root.tileSize() * root.tierSize(v)
+                width: s * root.rowScale(index)
+                height: s
+                x: (root.cellPitch() - s) / 2 + index * root.cellPitch() + root.marginLeft
                 y: content.height - height - leftCell.index * root.cellPitch()
                 color: root.tierColor(v)
                 opacity: root.cellOpacity(v, index)
@@ -390,11 +401,12 @@ Item {
 
               Rectangle {
                 required property int index
-                readonly property real v: rightCell.index * root.rows + index < root.sideValues.length
-                  ? root.sideValues[rightCell.index * root.rows + index] : 0
-                width: root.tileSize() * root.tierSize(v)
-                height: width
-                x: content.width - width - (root.cellPitch() - width) / 2 - index * root.cellPitch()
+                readonly property real v: rightCell.index * Math.ceil(root.rows) + index < root.sideValues.length
+                  ? root.sideValues[rightCell.index * Math.ceil(root.rows) + index] : 0
+                readonly property real s: root.tileSize() * root.tierSize(v)
+                width: s * root.rowScale(index)
+                height: s
+                x: content.width - (root.cellPitch() - s) / 2 - index * root.cellPitch() - width - root.marginRight
                 y: content.height - height - rightCell.index * root.cellPitch()
                 color: root.tierColor(v)
                 opacity: root.cellOpacity(v, index)

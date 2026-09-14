@@ -33,6 +33,8 @@ below windows). Fed by `cava`'s raw ascii output.
 | `idleFadeout` | 1000 | ms of silence before the strip fades out. |
 | `fadeMs` | 0 | show/hide fade duration; 0 = appear and vanish instantly. |
 | `cellMs` | 0 | per-cell opacity/size transition; 0 = instant 0-1 jump. |
+| `marginTop` / `marginBottom` | 0 / 0 | strip offset from the top/bottom edge; negative pushes it off-screen (tiles cut). |
+| `marginLeft` / `marginRight` | -20 / -20 | strip offset from the left/right edge; negative pushes it off-screen (tiles cut). |
 
 ## Apply changes
 
