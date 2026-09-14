@@ -35,7 +35,7 @@ Item {
   property real marginBottom: 0   // off-screen, so the outer tiles get cut at the edge
   property real marginLeft: -20
   property real marginRight: -20
-  property real sideShade: 0.35   // darkening at the left/right screen edges (0 = off)
+  property real sideShade: 0      // darkening at the left/right screen edges (0 = off)
   property real sideShadeWidth: 280 // how far that shade reaches from each edge
   // ----------------------------------------------------------
 
@@ -189,6 +189,22 @@ Item {
     return tileAlpha * tierAlpha(v) * (1 - rowFade * row / Math.max(1, Math.ceil(rows) - 1))
   }
 
+  // Corner guard: where two perpendicular strips are both enabled, the cells
+  // that would sit inside the other strip's area are not drawn, so the corner
+  // stays empty instead of stacking two grids on top of each other.
+  function sideCellBlocked(alongIndex) {
+    var center = (alongIndex + 0.5) * cellPitch()
+    if (topStrip && boardH() - center < stripExtent()) return true
+    if (bottomStrip && center < stripExtent()) return true
+    return false
+  }
+  function edgeCellBlocked(acrossIndex) {
+    var center = (acrossIndex + 0.5) * cellPitch()
+    if (leftStrip && center < stripExtent()) return true
+    if (rightStrip && boardW() - center < stripExtent()) return true
+    return false
+  }
+
   Process {
     id: cava
     command: ["cava"]
@@ -337,7 +353,7 @@ Item {
                   x: (column.width - width) / 2
                   y: column.height - height - index * root.cellPitch()
                   color: root.tierColor(v)
-                  opacity: root.cellOpacity(v, index)
+                  opacity: root.edgeCellBlocked(column.index) ? 0 : root.cellOpacity(v, index)
                   Behavior on opacity { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                   Behavior on width { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                   Behavior on height { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
@@ -372,7 +388,7 @@ Item {
                   x: (topColumn.width - width) / 2
                   y: index * root.cellPitch()
                   color: root.tierColor(v)
-                  opacity: root.cellOpacity(v, index)
+                  opacity: root.edgeCellBlocked(topColumn.index) ? 0 : root.cellOpacity(v, index)
                   Behavior on opacity { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                   Behavior on width { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                   Behavior on height { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
@@ -403,7 +419,7 @@ Item {
                 x: (root.cellPitch() - s) / 2 + index * root.cellPitch() + root.marginLeft
                 y: content.height - height - leftCell.index * root.cellPitch()
                 color: root.tierColor(v)
-                opacity: root.cellOpacity(v, index)
+                opacity: root.sideCellBlocked(leftCell.index) ? 0 : root.cellOpacity(v, index)
                 Behavior on opacity { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                 Behavior on width { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                 Behavior on height { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
@@ -433,7 +449,7 @@ Item {
                 x: content.width - (root.cellPitch() - s) / 2 - index * root.cellPitch() - width - root.marginRight
                 y: content.height - height - rightCell.index * root.cellPitch()
                 color: root.tierColor(v)
-                opacity: root.cellOpacity(v, index)
+                opacity: root.sideCellBlocked(rightCell.index) ? 0 : root.cellOpacity(v, index)
                 Behavior on opacity { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                 Behavior on width { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
                 Behavior on height { NumberAnimation { duration: root.cellMs; easing.type: Easing.OutQuad } }
