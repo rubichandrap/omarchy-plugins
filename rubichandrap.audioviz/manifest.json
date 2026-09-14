@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "rubichandrap.audioviz",
+  "name": "Audio visualizer",
+  "version": "0.1.0",
+  "author": "rubichandrap",
+  "description": "Pixel tiles on the desktop background that bounce with playing audio",
+  "kinds": ["panel"],
+  "keepLoaded": true,
+  "entryPoints": { "panel": "Visualizer.qml" }
+}
