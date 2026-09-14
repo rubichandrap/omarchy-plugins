@@ -33,10 +33,11 @@ below windows). Fed by `cava`'s raw ascii output.
 | `idleFadeout` | 1000 | ms of silence before the strip fades out. |
 | `fadeMs` | 0 | show/hide fade duration; 0 = appear and vanish instantly. |
 | `cellMs` | 0 | per-cell opacity/size transition; 0 = instant 0-1 jump. |
-| `marginTop` / `marginBottom` | 0 / 0 | strip offset from the top/bottom edge; negative pushes it off-screen (tiles cut). |
+| `marginTop` / `marginBottom` | -20 / -20 | strip offset from the top/bottom edge; negative pushes it off-screen (tiles cut). |
 | `marginLeft` / `marginRight` | -20 / -20 | strip offset from the left/right edge; negative pushes it off-screen (tiles cut). |
-| `endInsetLeft` / `endInsetRight` | 0 / 0 | blank this much of the left/right end of the top/bottom strips (px); works even when only that strip is enabled. |
-| `sideShade` | 0 | darkening at the left/right screen edges; 0 = off. |
+| `endInsetLeft` / `endInsetRight` | 100 / 100 | blank this much of the left/right end of the top/bottom strips (px); works even when only that strip is enabled. |
+| `endInsetTop` / `endInsetBottom` | 100 / 100 | blank this much of the top/bottom end of the left/right strips (px). |
+| `sideShade` | 0.5 | darkening at the left/right screen edges; 0 = off. |
 | `sideShadeWidth` | 280 | how far the edge shade reaches from each side. |
 
 When two perpendicular strips are enabled (e.g. `rightStrip` + `topStrip`),

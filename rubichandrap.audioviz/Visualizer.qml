@@ -24,20 +24,22 @@ Item {
   property real tileAlpha: 0.52   // global opacity multiplier
   property real rowFade: 0.55     // how much dimmer the inner row gets
   property real vignette: 0.30    // soft shadow behind the strips for contrast
-  property bool bottomStrip: true // bottom edge strip
+  property bool bottomStrip: false // bottom edge strip
   property bool topStrip: false   // top edge strip
-  property bool leftStrip: false  // left edge strip
-  property bool rightStrip: false // right edge strip
+  property bool leftStrip: true   // left edge strip
+  property bool rightStrip: true  // right edge strip
   property int idleFadeout: 1000  // ms after last audible frame until fade-out
   property int fadeMs: 0          // strip show/hide fade duration; 0 = instant
   property int cellMs: 0          // per-cell opacity/size transition; 0 = instant jump
-  property real marginTop: 0      // per-edge strip offset; negative pushes the strip
-  property real marginBottom: 0   // off-screen, so the outer tiles get cut at the edge
+  property real marginTop: -20      // per-edge strip offset; negative pushes the strip
+  property real marginBottom: -20   // off-screen, so the outer tiles get cut at the edge
   property real marginLeft: -20
   property real marginRight: -20
   property real endInsetLeft: 100   // blank this much of the left end of the top/bottom strips
   property real endInsetRight: 100  // same for the right end
-  property real sideShade: 0      // darkening at the left/right screen edges (0 = off)
+  property real endInsetTop: 100    // blank this much of the top end of the left/right strips
+  property real endInsetBottom: 100 // same for the bottom end
+  property real sideShade: 0.5      // darkening at the left/right screen edges (0 = off)
   property real sideShadeWidth: 280 // how far that shade reaches from each edge
   // ----------------------------------------------------------
 
@@ -196,6 +198,8 @@ Item {
   // stays empty instead of stacking two grids on top of each other.
   function sideCellBlocked(alongIndex) {
     var center = (alongIndex + 0.5) * cellPitch()
+    if (center < endInsetBottom) return true
+    if (boardH() - center < endInsetTop) return true
     if (topStrip && boardH() - center < stripExtent()) return true
     if (bottomStrip && center < stripExtent()) return true
     return false
@@ -289,7 +293,7 @@ Item {
         }
         Rectangle {
           visible: root.leftStrip
-          anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: root.marginLeft }
+          anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: root.marginLeft; topMargin: root.endInsetTop; bottomMargin: root.endInsetBottom }
           width: root.stripExtent() + root.cellPitch() * 0.5
           gradient: Gradient {
             orientation: Gradient.Horizontal
@@ -299,7 +303,7 @@ Item {
         }
         Rectangle {
           visible: root.rightStrip
-          anchors { right: parent.right; top: parent.top; bottom: parent.bottom; rightMargin: root.marginRight }
+          anchors { right: parent.right; top: parent.top; bottom: parent.bottom; rightMargin: root.marginRight; topMargin: root.endInsetTop; bottomMargin: root.endInsetBottom }
           width: root.stripExtent() + root.cellPitch() * 0.5
           gradient: Gradient {
             orientation: Gradient.Horizontal
