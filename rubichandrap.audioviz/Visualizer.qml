@@ -16,7 +16,7 @@ Item {
 
   // ---- knobs: edit freely, then `omarchy restart shell` ----
   property int columns: 44        // spectrum bands (match cava's `bars`)
-  property real rows: 3           // cell rows per strip (2.5 = two full rows + a half row)
+  property real rows: 4           // cell rows per strip (2.5 = two full rows + a half row)
   property real tileFill: 0.62    // lit cell size as a fraction of its slot
   property real gain: 0.85        // band sensitivity multiplier
   property real decay: 0.94       // per-frame brightness decay (used only when binary: false)
@@ -25,9 +25,9 @@ Item {
   property real rowFade: 0.55     // how much dimmer the inner row gets
   property real vignette: 0.30    // soft shadow behind the strips for contrast
   property bool bottomStrip: true // bottom edge strip
-  property bool topStrip: true    // top edge strip
-  property bool leftStrip: true   // left edge strip
-  property bool rightStrip: true  // right edge strip
+  property bool topStrip: false   // top edge strip
+  property bool leftStrip: false  // left edge strip
+  property bool rightStrip: false // right edge strip
   property int idleFadeout: 1000  // ms after last audible frame until fade-out
   property int fadeMs: 0          // strip show/hide fade duration; 0 = instant
   property int cellMs: 0          // per-cell opacity/size transition; 0 = instant jump
@@ -35,6 +35,8 @@ Item {
   property real marginBottom: 0   // off-screen, so the outer tiles get cut at the edge
   property real marginLeft: -20
   property real marginRight: -20
+  property real endInsetLeft: 100   // blank this much of the left end of the top/bottom strips
+  property real endInsetRight: 100  // same for the right end
   property real sideShade: 0      // darkening at the left/right screen edges (0 = off)
   property real sideShadeWidth: 280 // how far that shade reaches from each edge
   // ----------------------------------------------------------
@@ -200,6 +202,8 @@ Item {
   }
   function edgeCellBlocked(acrossIndex) {
     var center = (acrossIndex + 0.5) * cellPitch()
+    if (center < endInsetLeft) return true
+    if (boardW() - center < endInsetRight) return true
     if (leftStrip && center < stripExtent()) return true
     if (rightStrip && boardW() - center < stripExtent()) return true
     return false
@@ -267,7 +271,7 @@ Item {
         // vignette trick).
         Rectangle {
           visible: root.bottomStrip
-          anchors { left: parent.left; right: parent.right; bottom: parent.bottom; bottomMargin: root.marginBottom }
+          anchors { left: parent.left; right: parent.right; bottom: parent.bottom; bottomMargin: root.marginBottom; leftMargin: root.endInsetLeft; rightMargin: root.endInsetRight }
           height: root.stripExtent() + root.cellPitch() * 0.5
           gradient: Gradient {
             GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0) }
@@ -276,7 +280,7 @@ Item {
         }
         Rectangle {
           visible: root.topStrip
-          anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: root.marginTop }
+          anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: root.marginTop; leftMargin: root.endInsetLeft; rightMargin: root.endInsetRight }
           height: root.stripExtent() + root.cellPitch() * 0.5
           gradient: Gradient {
             GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, root.vignette) }
